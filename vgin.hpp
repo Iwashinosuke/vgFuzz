@@ -14,6 +14,7 @@ namespace vgin{
 
 constexpr unsigned long DEFAULT_MAX_INPUT_COUNT = 1024;
 constexpr long double DEFAULT_MAX_TESTCASE_TIME = 60;
+constexpr double TIME_EPSILON = 1e-9;
 
 class KeyUnit{
 public:
@@ -35,6 +36,7 @@ public:
 
 class VGInData{
 public:
+    vector<char> inputtings;
     unsigned char last_input;
     double last_input_started_time;
     double delta_time;
@@ -64,6 +66,71 @@ inline void debugVGIn(){
     for(auto& unit : d.input_data){
         cout << "  input:" << unit.input << "  starttime_from_pre_inunit:" << unit.starttime_from_pre_inunit << "  duration:" << unit.duration << endl;
     }
+}
+
+inline bool updateVGIn(double delta_time){ // false: 入力未終了, true: 入力終了
+    VGInData& d = data();
+    KeyTable& t = key_table();
+    d.delta_time = delta_time;
+    d.current_time += delta_time;
+
+    if(d.max_testcase_seconds < d.current_time) return true; // テストケース時間超過
+
+    // 入力データを順次処理
+    bool is_input_stream_finished = true;
+    auto it = d.input_data.begin();
+    while (it != d.input_data.end()) {
+        InUnit& unit = *it;
+        if(d.current_time >= unit.starttime_from_pre_inunit + d.last_input_started_time){
+            d.last_input_started_time += unit.starttime_from_pre_inunit;
+            if(d.current_time < unit.starttime_from_pre_inunit + d.last_input_started_time + unit.duration)
+            {
+                // input
+                for(auto& key : t.keys){
+                    if(key.input == unit.input){
+                        key.remaining_time += unit.duration;
+                        d.last_input = unit.input;
+                        d.inputtings.push_back(unit.input);
+                        break;
+                    }
+                }
+            }
+            it = d.input_data.erase(it);
+        }
+        else
+        {
+            is_input_stream_finished = false;
+            break;
+        }
+    }
+    
+    // キーテーブル処理
+    bool is_all_key_released = true;
+    for(auto& key : t.keys){
+        if(key.remaining_time > TIME_EPSILON){
+            key.remaining_time -= delta_time;
+            is_all_key_released = false;
+        }
+        else
+        {
+            key.remaining_time = 0;
+            if(d.last_input == key.input){
+                d.last_input = 0;
+            }
+        }
+    }
+
+    if(is_all_key_released) d.last_input = 0;
+    else if(d.last_input == 0) { // 何かのキーが押されている場合、登録されているかつ押されているキーの中で最初のキーをlast_inputに設定
+        for(auto& key : t.keys){
+            if(key.remaining_time > TIME_EPSILON){
+                d.last_input = key.input;
+                break;
+            }
+        }
+    }
+
+    return is_input_stream_finished && is_all_key_released;
 }
 
 inline bool createVGIn(const char* keys, long double max_testcase_seconds = DEFAULT_MAX_TESTCASE_TIME){
@@ -98,7 +165,7 @@ inline bool createVGIn(const char* keys, long double max_testcase_seconds = DEFA
             if(cin.eof()) break;
         }
 
-        return true;
+        return !updateVGIn(0); // 0秒時点での入力処理
     }
     catch (const std::bad_alloc& e) {
         // std::cerr << "Memory allocation failed: " << e.what() << std::endl; // ファザー向けとして、ここでのエラーは無視する
@@ -108,55 +175,11 @@ inline bool createVGIn(const char* keys, long double max_testcase_seconds = DEFA
     return false;
 }
 
-inline bool updateVGIn(double delta_time){ // false: 入力未終了, true: 入力終了
-    VGInData& d = data();
-    KeyTable& t = key_table();
-    d.delta_time = delta_time;
-    d.current_time += delta_time;
-
-    if(d.max_testcase_seconds < d.current_time) return true; // テストケース時間超過
-
-    // キーテーブル処理
-    for(auto& key : t.keys){
-        if(key.remaining_time > 0){
-            key.remaining_time -= delta_time;
-        }
-        if(key.remaining_time < 0){
-            key.remaining_time = 0;
-        }
-    }
-
-    // 入力データを順次処理
-    auto it = d.input_data.begin();
-    while (it != d.input_data.end()) {
-        InUnit& unit = *it;
-        if(d.current_time >= unit.starttime_from_pre_inunit + d.last_input_started_time){
-            d.last_input_started_time += unit.starttime_from_pre_inunit;
-            if(d.current_time < unit.starttime_from_pre_inunit + d.last_input_started_time + unit.duration)
-            {
-                // input
-                for(auto& key : t.keys){
-                    if(key.input == unit.input){
-                        key.remaining_time += unit.duration;
-                        d.last_input = unit.input;
-                        break;
-                    }
-                }
-            }
-            it = d.input_data.erase(it);
-        }else{
-            return false; // 次のupdateまで待機
-        }
-    }
-    
-    return true;
-}
-
 inline char vg_getch(){
     return data().last_input;
 }
 
-inline char vg_ispressed(char key){
+inline bool vg_ispressed(char key){
     KeyTable& t = key_table();
     for(auto& k : t.keys){
         if(k.input == key){
@@ -167,12 +190,12 @@ inline char vg_ispressed(char key){
 }
 
 extern "C" {
-    int createVGcIn(const char* keys, double max_testcase_seconds = DEFAULT_MAX_TESTCASE_TIME){
+    int createVgcIn(const char* keys, double max_testcase_seconds = DEFAULT_MAX_TESTCASE_TIME){
         bool result = createVGIn(keys, max_testcase_seconds);
         if(result) return 0;
         else return -1;
     }
-    int updateVGcIn(double delta_time){
+    int updateVgcIn(double delta_time){
         bool result = updateVGIn(delta_time);
         if(result) return 0;
         else return -1;
@@ -180,8 +203,9 @@ extern "C" {
     char vgc_getch(){
         return vg_getch();
     }
-    char vgc_ispressed(char key){
-        return vg_ispressed(key);
+    int vgc_ispressed(char key){
+        if(vg_ispressed(key)) return 1;
+        else return 0;
     }
 }
 }

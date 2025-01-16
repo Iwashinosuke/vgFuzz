@@ -3,6 +3,8 @@
 #include <cassert>
 #include <fstream>
 
+using namespace vgin;
+
 int main() {
     std::cout << "vg, input:" << std::endl;
     // std::string input;
