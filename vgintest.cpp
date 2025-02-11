@@ -4,6 +4,7 @@
 #include <fstream>
 
 using namespace vgin;
+using namespace vgijon;
 
 int main(void) {
     std::cout << "vg, input:" << std::endl;
@@ -14,15 +15,28 @@ int main(void) {
     
 
     const char keys[] = {'a', 'b', 'c'};
-    std::ifstream ifs("in/ccc");
-    std::cin.rdbuf(ifs.rdbuf());
-    // assert(createVGIn(keys) == true);
+
+    // テスト時は下をコメントアウト
+    // std::ifstream ifs("in/ccc");
+    // std::cin.rdbuf(ifs.rdbuf());
+    // テスト時は上をコメントアウト
 
     createVGIn(keys);
+    // createVGIn(keys);
+    // __afl_coverage_off();
+    VGIJON_SET(3);
+    // IJON_SET(1);
+    // IJON_SKIP_THIS_TEST();
 
     for(int i=0; i<100; i++){
-        cout << "current:" << 0.1*i << "  input:" << vg_getch() << endl;
-        if(updateVGIn(0.1)) break;
+        cout << "current:" << 0.1*i << "  input:" << vgc_getch() << endl;
+        if(updateVGIn(0.1))
+        {break;}
+        else
+        {VGIJON_SET(i);}
     }
+
+    // if(vg_ispressed('a')) cout << "a is pressed" << endl;
+
     return 0;
 }

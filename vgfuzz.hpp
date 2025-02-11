@@ -12,44 +12,38 @@ namespace {
 constexpr unsigned long DEFAULT_MAX_INPUT_COUNT = 1024;
 constexpr long double DEFAULT_MAX_TESTCASE_TIME = 60;
 constexpr double TIME_EPSILON = 1e-9;
+
+
+extern "C" {
+    int __afl_coverage_interesting(int x, uint32_t addr);
+    void __afl_coverage_on();
+    void __afl_coverage_off();
 }
+}
+
+// extern "C" {
+//     int __afl_coverage_interesting(int x, uint32_t addr);
+//     void __afl_coverage_on();
+//     void __afl_coverage_off();
+// }
+
+// __AFL_COVERAGE();
 
 namespace vgijon{
-int ijon_hash(uint32_t addr);
-int ijon_max(uint32_t x);
-int ijon_min(uint32_t x);
-int __afl_coverage_interesting(int x, uint32_t addr);
-
-#ifndef IJONLIKE_H
-#define IJONLIKE_H
-
-#ifdef __AFL_COMPILER
-#if IJON_MODE
-  #define IJON_LIMITED_COVERAGE() __AFL_COVERAGE_START_OFF()
-  #define IJON_ENABLE() __AFL_COVERAGE_ON()
-  #define IJON_DISABLE() __AFL_COVERAGE_OFF()
-  #define IJON_DISCARD() __AFL_COVERAGE_DISCARD()
-  #define IJON_SKIP_THIS_TEST() __AFL_COVERAGE_SKIP()
-  #define IJON_SET(x) __afl_coverage_interesting(1,x)
-//   #define IJON_MAXIMIZE(target) //ijon_max(target)
-//   #define IJON_MINIMIZE(target) //ijon_min(target)
-#else
-  #define IJON_LIMITED_COVERAGE()
-  #define IJON_ENABLE()
-  #define IJON_DISABLE()
-  #define IJON_DISCARD()
-  #define IJON_SKIP_THIS_TEST()
-  #define IJON_SET(x)
-//   #define IJON_MAXIMIZE(target)
-//   #define IJON_MINIMIZE(target)
-#endif
-#endif
-
-#endif
+    #define VGIJON_MODE 1
+    #if VGIJON_MODE == 1
+    #define VGIJON_SET(x) __afl_coverage_interesting(1, x)
+    #define COV_OFF() __afl_coverage_off()
+    #define COV_ON() __afl_coverage_on()
+    #else
+    #define VGIJON_SET(x)
+    #define COV_OFF()
+    #define COV_ON()
+    #endif
 }
 
-IJON_LIMITED_COVERAGE();
-IJON_DISABLE();
+// IJON_LIMITED_COVERAGE();
+// IJON_DISABLE();
 
 namespace vgin{
 
@@ -103,15 +97,24 @@ inline void debugVGIn(){
     for(auto& unit : d.input_data){
         cout << "  input:" << unit.input << "  starttime_from_pre_inunit:" << unit.starttime_from_pre_inunit << "  duration:" << unit.duration << endl;
     }
+
+    // if(d.inputtings.size() > 0){
+    //     cout << "inputtings:";
+    //     for(auto& input : d.inputtings){
+    //         cout << " " << input;
+    //     }
+    //     cout << endl;
+    // }
 }
 
 inline bool updateVGIn(double delta_time){ // false: 入力未終了, true: 入力終了
+    COV_OFF();
     VGInData& d = data();
     KeyTable& t = key_table();
     d.delta_time = delta_time;
     d.current_time += delta_time;
 
-    if(d.max_testcase_seconds < d.current_time) return true; // テストケース時間超過
+    if(d.max_testcase_seconds < d.current_time) {COV_ON(); return true;} // テストケース時間超過
 
     // 入力データを順次処理
     bool is_input_stream_finished = true;
@@ -167,10 +170,13 @@ inline bool updateVGIn(double delta_time){ // false: 入力未終了, true: 入�
         }
     }
 
+    COV_ON();
     return is_input_stream_finished && is_all_key_released;
 }
 
 inline bool createVGIn(const char* keys, long double max_testcase_seconds = DEFAULT_MAX_TESTCASE_TIME){
+    // __AFL_COVERAGE_OFF();
+    COV_OFF();
     try{
         VGInData& d = data();
         KeyTable& t = key_table();
@@ -202,13 +208,18 @@ inline bool createVGIn(const char* keys, long double max_testcase_seconds = DEFA
             if(cin.eof()) break;
         }
 
+        COV_ON();
+        // __AFL_COVERAGE_ON();
         return !updateVGIn(0); // 0秒時点での入力処理
     }
     catch (const std::bad_alloc& e) {
         // std::cerr << "Memory allocation failed: " << e.what() << std::endl; // ファザー向けとして、ここでのエラーは無視する
+        // __AFL_COVERAGE_ON();
+        COV_ON();
         return false;
     }
-
+    // __AFL_COVERAGE_ON();
+    COV_ON();
     return false;
 }
 
@@ -217,18 +228,24 @@ inline char vg_getch(){
 }
 
 inline bool vg_ispressed(char key){
+    COV_OFF();
     KeyTable& t = key_table();
     for(auto& k : t.keys){
         if(k.input == key){
+            COV_ON();
             return k.remaining_time > 0;
         }
     }
+    COV_ON();
     return false;
 }
 
 extern "C" {
+
     int createVgcIn(const char* keys, double max_testcase_seconds = DEFAULT_MAX_TESTCASE_TIME){
+        // IJON_DISABLE();
         bool result = createVGIn(keys, max_testcase_seconds);
+        // IJON_ENABLE();
         if(result) return 0;
         else return -1;
     }
@@ -247,6 +264,6 @@ extern "C" {
 }
 }
 
-IJON_ENABLE();
+// IJON_ENABLE();
 
 #endif // VGIN_HH
