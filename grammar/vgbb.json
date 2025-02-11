@@ -1,0 +1,28 @@
+{
+    "<START>": [["<ARRAY>"]],
+    "<ARRAY>": [["<ELEMENTS>"]],
+    "<ELEMENTS>": [["<ELEMENT>"], ["<ELEMENTS>","<ELEMENT>"]],
+    "<ELEMENT>": [["<INPUT>","<ELEMENT_FORMAT>","<VG_DOUBLE>","<ELEMENT_FORMAT>","<VG_DOUBLE>","<ELEMENT_FORMAT_END>"]],
+    "<ELEMENT_FORMAT>": [[" "]],
+    "<ELEMENT_FORMAT_END>": [["\n"]],
+    "<START_TIME_FROM_BEFORE>" : [["<VG_DOUBLE>"]],
+    "<IN_LENGTH>" : [["<VG_DOUBLE>"]],
+    
+    "<NONZERO_DIGIT>" : [["1"], ["2"], ["3"], ["4"], ["5"], ["6"], ["7"], ["8"], ["9"]],
+    "<DIGIT_ZERO>" : [["0"]],
+    "<DIGIT>" : [["<DIGIT_ZERO>"], ["<NONZERO_DIGIT>"]],
+    "<DOT>" : [["."]],
+    "<VG_INTEGER>" : [
+        ["<DIGIT>"],
+        ["<NONZERO_DIGIT>","<DIGIT>"]
+    ],
+    "<VG_DOUBLE>" : [
+        ["<VG_INTEGER>","<DOT>","<DIGIT>","<DIGIT>","<DIGIT>","<NONZERO_DIGIT>"],
+        ["<VG_INTEGER>","<DOT>","<DIGIT>","<DIGIT>","<NONZERO_DIGIT>"],
+        ["<VG_INTEGER>","<DOT>","<DIGIT>","<NONZERO_DIGIT>"],
+        ["<VG_INTEGER>","<DOT>","<DIGIT>"]
+    ],
+
+
+    "<INPUT>" : [["w"], ["a"], ["s"], ["d"]]
+}
