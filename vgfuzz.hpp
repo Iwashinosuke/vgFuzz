@@ -21,14 +21,6 @@ extern "C" {
 }
 }
 
-// extern "C" {
-//     int __afl_coverage_interesting(int x, uint32_t addr);
-//     void __afl_coverage_on();
-//     void __afl_coverage_off();
-// }
-
-// __AFL_COVERAGE();
-
 namespace vgijon{
     #define VGIJON_MODE 1
     #if VGIJON_MODE == 1
@@ -41,9 +33,6 @@ namespace vgijon{
     #define COV_ON()
     #endif
 }
-
-// IJON_LIMITED_COVERAGE();
-// IJON_DISABLE();
 
 namespace vgin{
 
@@ -209,16 +198,12 @@ inline bool createVGIn(const char* keys, long double max_testcase_seconds = DEFA
         }
 
         COV_ON();
-        // __AFL_COVERAGE_ON();
         return !updateVGIn(0); // 0秒時点での入力処理
     }
     catch (const std::bad_alloc& e) {
-        // std::cerr << "Memory allocation failed: " << e.what() << std::endl; // ファザー向けとして、ここでのエラーは無視する
-        // __AFL_COVERAGE_ON();
         COV_ON();
         return false;
     }
-    // __AFL_COVERAGE_ON();
     COV_ON();
     return false;
 }
@@ -243,9 +228,7 @@ inline bool vg_ispressed(char key){
 extern "C" {
 
     int createVgcIn(const char* keys, double max_testcase_seconds = DEFAULT_MAX_TESTCASE_TIME){
-        // IJON_DISABLE();
         bool result = createVGIn(keys, max_testcase_seconds);
-        // IJON_ENABLE();
         if(result) return 0;
         else return -1;
     }
@@ -263,7 +246,5 @@ extern "C" {
     }
 }
 }
-
-// IJON_ENABLE();
 
 #endif // VGIN_HH
