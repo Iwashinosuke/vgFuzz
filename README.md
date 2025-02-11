@@ -1,1 +1,4 @@
 # vgFuzz
+
+テストコマンド:
+afl-fuzz -i in -o out /vgFuzz/vgintest

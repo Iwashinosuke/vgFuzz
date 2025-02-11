@@ -1,7 +1,7 @@
 # Makefile to compile vgintest.cpp
 
 # Compiler
-CXX = g++
+CXX = afl-clang-fast++
 
 # Compiler flags
 CXXFLAGS = -Wall -Wextra -std=c++11
@@ -22,9 +22,9 @@ all: $(TARGET)
 $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
-# Rule to build object files
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+# # Rule to build object files
+# %.o: %.cpp
+# 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Clean up build files
 clean:
