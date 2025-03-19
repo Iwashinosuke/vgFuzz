@@ -11,15 +11,18 @@ namespace {
 constexpr unsigned long DEFAULT_MAX_INPUT_COUNT = 1024;
 constexpr long double DEFAULT_MAX_TESTCASE_TIME = 60;
 constexpr double TIME_EPSILON = 1e-9;
+static unsigned char* testcase = nullptr;
+static ssize_t testcase_len = 0;
+static unsigned char* current_input = nullptr;
+static ssize_t current_input_len = 0;
+}
 
 
 extern "C" {
     int __afl_coverage_interesting(int x, uint32_t addr);
     void __afl_coverage_on();
     void __afl_coverage_off();
-
-    #define TESTCASE_LEN __AFL_FUZZ_TESTCASE_LEN
-}
+    
 }
 
 namespace vgfuzz {
@@ -30,23 +33,47 @@ namespace vgfuzz {
             CustomEnd
         };
 
+        enum class UsingModule{
+            Ijon,
+            Vgin
+        };
+
         void mode()
         {
 
         }
 
+
         bool isTestcaseEnd(){
+            if(current_input_len >= testcase_len) return true;
+            else
             return false;
         }
 
         bool isAllTestEnd(){
             return false;
         }
+
+        void informStringTestcaseData(unsigned char* data, size_t data_len){
+            testcase = data;
+            testcase_len = data_len;
+            current_input = testcase;
+            current_input_len = 0;
+        }
+
+        unsigned char* getchTestcase(){
+            if(current_input_len < testcase_len){
+                current_input_len++;
+                return current_input++;
+            }
+            else{
+                return nullptr;
+            }
+        }
     }
 
     namespace ijon{
-        #define VGIJON_MODE 1
-        #if VGIJON_MODE == 1
+        #ifdef VGIJON
         #define VGIJON_SET(x) __afl_coverage_interesting(1, x)
         #define COV_OFF() __afl_coverage_off()
         #define COV_ON() __afl_coverage_on()
@@ -256,24 +283,24 @@ namespace vgfuzz {
 }
 
 extern "C"{
-    int vgfuzz_isTestcaseEnd(){
-        return vgfuzz::manager::isTestcaseEnd() ? 1 : 0;
+    bool vgfuzz_isTestcaseEnd(){
+        return vgfuzz::manager::isTestcaseEnd();
     }
     
-    int vgfuzz_isAllTestEnd(){
-        return vgfuzz::manager::isAllTestEnd() ? 1 : 0;
+    bool vgfuzz_isAllTestEnd(){
+        return vgfuzz::manager::isAllTestEnd();
     }
     
-    int vgfuzz_createVgin(const char* keys, double max_testcase_seconds = DEFAULT_MAX_TESTCASE_TIME){
+    VGFUZZ_RETURN vgfuzz_createVgin(const char* keys, double max_testcase_seconds = DEFAULT_MAX_TESTCASE_TIME){
         bool result = vgfuzz::vgin::createVgin(keys, max_testcase_seconds);
-        if(result) return 0;
-        else return -1;
+        if(result) return VGFUZZ_SUCCESS;
+        else return VGFUZZ_FAILURE;
     }
     
-    int vgfuzz_updateVgin(double delta_time){
+    VGFUZZ_RETURN vgfuzz_updateVgin(double delta_time){
         bool result = vgfuzz::vgin::updateVgin(delta_time);
-        if(result) return 0;
-        else return -1;
+        if(result) return VGFUZZ_SUCCESS;
+        else return VGFUZZ_CONTINUE;
     }
     
     char vgfuzz_getch(){
@@ -283,7 +310,19 @@ extern "C"{
     int vgfuzz_isPressed(char key){
         if(vgfuzz::vgin::isPressed(key)) return 1;
         else return 0;
-    
+    }
+
+    /* vgfuzzモジュールにAFLからのデータを入力、dataポインタはテストの初回のみ渡してください */
+    void vgfuzz_informAFLData(unsigned char* data, size_t data_len)
+    {
+        vgfuzz::manager::informStringTestcaseData(data, data_len);
+    }
+
+    /* バニラAFL++の入力 */
+    unsigned char* vgfuzz_getchDirectly(void){
+        unsigned char* key = vgfuzz::manager::getchTestcase();
+        if(key == nullptr) return 0;
+        else return key;
     }
 }
 }

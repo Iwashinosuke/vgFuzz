@@ -13,7 +13,15 @@ $(info IJON = $(VGIJON))
 $(info VGIN = $(VGIN))
 
 # フラグ追加
-VGTEST_UTILS += -DVGTEST=$(VGTEST) -DVGIJON=$(VGIJON) -DVGIN=$(VGIN)
+VGTEST_UTILS += -DVGTEST=$(VGTEST)
+
+ifeq ($(VGIJON),1)
+VGTEST_UTILS += -DVGIJON=$(VGIJON)
+endif
+ifeq ($(VGIN),1)
+VGTEST_UTILS += -DVGIN=$(VGIN)
+endif
+
 
 else
 $(info --- vgFuzz installed, but not in test mode ---)
