@@ -10,7 +10,7 @@ extern int vgfuzz_createVGIn(const char* keys, double max_testcase_seconds);
 extern int vgfuzz_updateVGIn(double delta_time);
 extern char vgfuzz_getch(void);
 extern int vgfuzz_ispressed(char key);
-extern void vgfuzz_informAFLData(unsigned char* data, ssize_t data_len);
+extern void vgfuzz_informAFLData(unsigned char* data, size_t data_len);
 extern unsigned char* vgfuzz_getchDirectly(void);
 
 

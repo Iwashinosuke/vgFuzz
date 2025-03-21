@@ -7,14 +7,15 @@
 
 using namespace std;
 
+
 namespace {
 constexpr unsigned long DEFAULT_MAX_INPUT_COUNT = 1024;
 constexpr long double DEFAULT_MAX_TESTCASE_TIME = 60;
 constexpr double TIME_EPSILON = 1e-9;
 static unsigned char* testcase = nullptr;
-static ssize_t testcase_len = 0;
+static size_t testcase_len = 0;
 static unsigned char* current_input = nullptr;
-static ssize_t current_input_len = 0;
+static size_t current_input_len = 0;
 }
 
 
@@ -26,21 +27,27 @@ extern "C" {
 }
 
 namespace vgfuzz {
-    namespace manager{
-        enum class TestcaseEndMode{
-            FinishInputToEnd,
-            PassedTimeToEnd,
-            CustomEnd
-        };
+    class vgFuzzMaster{
+        
+    };
 
+    namespace manager{
         enum class UsingModule{
             Ijon,
             Vgin
         };
 
-        void mode()
+        void setTestcaseEndMode(VGFUZZ_TESTCASE_END_MODE mode)
         {
-
+            switch (mode)
+            {
+            case VGFUZZ_TESTCASE_END_MODE::VGFUZZ_TEM_FINISH_INPUT:
+                break;
+            case VGFUZZ_TESTCASE_END_MODE::VGFUZZ_TEM_PASSED_TIME:
+                break;
+            case VGFUZZ_TESTCASE_END_MODE::VGFUZZ_TEM_CUSTOM:
+                break;
+            }
         }
 
 
