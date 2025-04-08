@@ -5,7 +5,7 @@ CXX = g++
 CXXFLAGS = -Wall -Wextra -std=c++23 -fPIC
 
 # Source files
-SRCS = $(wildcard *.cpp)
+SRCS = $(wildcard src/*.cpp)
 
 # Object files
 OBJS = $(SRCS:.cpp=.o)

@@ -1,9 +1,10 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <sstream>
 
-#include "vgfuzz.h"
-#include "vgfuzz_predefines.hpp"
+#include "../include/vgfuzz.h"
+#include "../include/vgfuzz_predefines.hpp"
 
 using namespace std;
 
@@ -27,6 +28,8 @@ extern "C" {
 }
 
 namespace vgfuzz {
+
+
     class vgFuzzMaster{
         
     };
@@ -131,6 +134,7 @@ namespace vgfuzz {
         static KeyTable key_table;
         return key_table;
     }
+
     
     void debugVgin(){
         VGInData& d = data();
@@ -153,6 +157,8 @@ namespace vgfuzz {
         // }
     }
     
+    
+
     bool updateVgin(double delta_time){ // false: 入力未終了, true: 入力終了
         COV_OFF();
         VGInData& d = data();
@@ -259,12 +265,52 @@ namespace vgfuzz {
         }
         catch (const std::bad_alloc& e) {
             // COV_ON();
-            return false;
+            // return false;
         }
         // COV_ON();
         return false;
     }
     
+    // bool createVgin(const char* keys, double max_testcase_seconds = DEFAULT_MAX_TESTCASE_TIME,unsigned char* buf, size_t buf_size)
+    // {
+    //     VGInData& d = data();
+    //     KeyTable& t = keyTable();
+    //     /* == 入力キー初期化 == */
+    //     for(int i=0; i<int(sizeof(keys)); i++){
+    //         KeyUnit unit = KeyUnit();
+    //         unit.input = keys[i];
+    //         unit.remaining_time = 0;
+    //         t.keys.push_back(unit);
+    //     }
+
+    //     /* == 入力ストリーム初期化 == */
+    //     d.last_input_started_time = 0;
+    //     d.current_time = 0;
+    //     d.delta_time = 0;
+    //     d.input_data = vector<InUnit>();
+    //     d.last_input = 0;
+    //     d.max_testcase_seconds = max_testcase_seconds;
+
+    //     std::istringstream iss(reinterpret_cast<char*>(buf), std::ios::binary);
+    //     std::streambuf* cinbuf = cin.rdbuf();
+    //     cin.rdbuf(iss.rdbuf());
+    //     for(size_t i=0; i<buf_size; i++){
+    //         InUnit unit = InUnit();
+    //         if(cin.eof()) return false;
+    //         cin >> unit.input;
+    //         if(cin.eof()) return false;
+    //         cin >> unit.starttime_from_pre_inunit;
+    //         if(cin.eof()) return false;
+    //         cin >> unit.duration;
+    //         d.input_data.push_back(unit);
+    //         if(cin.eof()) break;
+    //     }
+    //     cin.rdbuf(cinbuf);
+
+    //     // COV_ON();
+    //     return !updateVgin(0); // 0秒時点での入力処理
+    // }        
+
     char getch(){
         return data().last_input;
     }
@@ -298,11 +344,14 @@ extern "C"{
         return vgfuzz::manager::isAllTestEnd();
     }
     
-    VGFUZZ_RETURN vgfuzz_createVgin(const char* keys, double max_testcase_seconds = DEFAULT_MAX_TESTCASE_TIME){
-        bool result = vgfuzz::vgin::createVgin(keys, max_testcase_seconds);
-        if(result) return VGFUZZ_SUCCESS;
-        else return VGFUZZ_FAILURE;
-    }
+    // VGFUZZ_RETURN vgfuzz_createVgin(const char* keys, double max_testcase_seconds = DEFAULT_MAX_TESTCASE_TIME, unsigned char* data, size_t data_len = 0){
+    //     if(data != nullptr && data_len > 0){
+    //         cin.rd
+    //     }
+    //     bool result = vgfuzz::vgin::createVgin(keys, max_testcase_seconds);
+    //     if(result) return VGFUZZ_SUCCESS;
+    //     else return VGFUZZ_FAILURE;
+    // }
     
     VGFUZZ_RETURN vgfuzz_updateVgin(double delta_time){
         bool result = vgfuzz::vgin::updateVgin(delta_time);
