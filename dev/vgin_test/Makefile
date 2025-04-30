@@ -1,6 +1,6 @@
 CXX := g++
 CXXFLAGS := -std=c++17 -Wall -Wextra -O2
-LDFLAGS := libvgFuzz.so
+LDFLAGS := ../../libvgFuzz.so
 
 TARGET := a.out
 SRC := test.cpp

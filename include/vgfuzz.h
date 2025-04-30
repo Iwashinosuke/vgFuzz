@@ -12,7 +12,7 @@ extern char vgfuzz_getch(void);
 extern int vgfuzz_ispressed(char key);
 extern void vgfuzz_informAFLData(unsigned char* data, size_t data_len);
 extern unsigned char* vgfuzz_getchDirectly(void);
-
+extern const unsigned char* vgin_getchs(size_t* len);
 
 #ifdef __cplusplus
 }

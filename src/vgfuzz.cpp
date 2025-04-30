@@ -28,8 +28,6 @@ extern "C" {
 }
 
 namespace vgfuzz {
-
-
     class vgFuzzMaster{
         
     };

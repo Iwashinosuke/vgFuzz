@@ -22,11 +22,9 @@ all: $(TARGET)
 $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
-# # Rule to build object files
-# %.o: %.cpp
-# 	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-# Clean up build files
+# Rule to build object files
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 clean:
 	rm -f $(TARGET) $(OBJS)
 
