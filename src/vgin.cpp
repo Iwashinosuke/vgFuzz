@@ -180,6 +180,10 @@ namespace vgin{
 
     std::vector<unsigned char> VGInBuf::get_processings()
     {
+        if(_life_cycle == vgin::VGIN_LIFE_CYCLE::END)
+        {
+            return _processing_keys;
+        }
         if(_is_updated)
         {
             _processing_keys.clear();
@@ -189,6 +193,11 @@ namespace vgin{
                 {
                     _processing_keys.push_back(k.first);
                 }
+            }
+            if(_life_cycle == vgin::VGIN_LIFE_CYCLE::ENDING && _processing_keys.empty())
+            {
+                _life_cycle = vgin::VGIN_LIFE_CYCLE::END;
+                _processing_keys.push_back(0);
             }
             _is_updated = false;
         }

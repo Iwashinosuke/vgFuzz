@@ -1,4 +1,4 @@
-CXX := g++
+CXX := afl-clang-fast++
 CXXFLAGS := -std=c++17 -Wall -Wextra -O2
 LDFLAGS := ../../libvgFuzz.so
 

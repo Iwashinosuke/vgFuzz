@@ -1,0 +1,6 @@
+.vscode/*
+grammar_in/*
+out/*
+
+!grammar_in/dummy.txt
+!out/dummy.txt

@@ -12,6 +12,9 @@ $(info --- VGFUZZ TEST ACTIVATED ---)
 $(info IJON = $(VGIJON))
 $(info VGIN = $(VGIN))
 
+# 動的ライブラリの追加
+VGTEST_UTILS = -L./vgFuzz -lvgFuzz
+
 # フラグ追加
 VGTEST_UTILS += -DVGTEST=$(VGTEST)
 
